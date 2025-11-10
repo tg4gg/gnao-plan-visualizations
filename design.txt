@@ -1,0 +1,33 @@
+# Design Notes
+
+## Objectives
+- Parse the "GCS Plan to get to CDR.md" document to extract the major task headings and map them to Science, Systems Engineering, or Software categories.
+- Provide multiple visualization types that help stakeholders understand cross-discipline workload distribution.
+- Keep the workflow reproducible from a clean environment via the provided Python script.
+
+## Data Extraction
+1. Treat the markdown file as the single source of truth.
+2. Recognize sections by first-level headings ("Science Tasks", "Science + Systems Engineering Tasks", etc.).
+3. Capture second-level headings beneath those sections as distinct tasks and inherit the section's category mapping.
+4. Store each task as a dict containing name, categories, and parent section for downstream plotting.
+
+## Visualizations
+1. **Venn Diagrams**
+   - `draw_venn`: Simple overlap view with only category labels to show set size.
+   - `draw_venn_detailed`: Uses the same structure but injects task names into each region. Tasks are rendered in small rounded boxes, stacked vertically within the overarching circle to stay readable even when one category dominates.
+2. **Bar Chart**
+   - Aggregates counts for each unique category combination (Science-only, Science+SE, etc.) to make resourcing discussions easier.
+3. **Bipartite Network**
+   - Categories appear on the left, tasks on the right. Edges illustrate which teams participate in each deliverable.
+4. **Heatmap**
+   - Matrix with tasks on the Y-axis and the three categories on the X-axis. Binary membership values highlight coverage and gaps.
+
+## Implementation Notes
+- Implemented in `create_task_diagrams.py` with helper functions for parsing, building category sets, and rendering each visualization.
+- Uses `matplotlib`, `matplotlib-venn`, `networkx`, and `numpy`. All plots are saved as PNGs in the repo root for easy sharing.
+- The script is idempotent: re-running after changes to the markdown regenerates all diagrams in one go.
+
+## Future Enhancements
+- Accept the markdown path as a CLI argument to support alternate plans.
+- Emit underlying data (JSON/CSV) for downstream tools.
+- Provide optional timeline or sunburst charts once schedule metadata is added.
