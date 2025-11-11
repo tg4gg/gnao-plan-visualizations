@@ -1,6 +1,5 @@
 root:
   label: "Index"
-  anchor: "index"
 
 categories:
   - "Science"
@@ -9,82 +8,57 @@ categories:
 
 sections:
   - label: "Tasks needed to get to CDR"
-    anchor: "tasks-needed-to-get-to-cdr"
     parent: "Index"
     categories: []
     tasks: []
 
   - label: "Science Tasks"
-    anchor: "science-tasks"
     parent: "Index"
     categories:
       - "Science"
     tasks:
       - label: "Update GNAO ConOps"
-        anchor: "update-gnao-conops"
 
   - label: "Science + Systems Engineering Tasks"
-    anchor: "science-+-systems-engineering-tasks"
     parent: "Index"
     categories:
       - "Science"
       - "Systems Engineering"
     tasks:
       - label: "Create GNAO OpsCon"
-        anchor: "create-gnao-opscon"
       - label: "Create AOS OpsCon"
-        anchor: "create-aos-opscon"
       - label: "Create GFC OpsCon"
-        anchor: "create-gfc-opscon"
 
   - label: "Systems Engineering Tasks"
-    anchor: "systems-engineering-tasks"
     parent: "Index"
     categories:
       - "Systems Engineering"
     tasks:
       - label: "Finalize MindMaps"
-        anchor: "finalize-mindmaps"
       - label: "Create GFC Subsystem Spec"
-        anchor: "create-gfc-subsystem-spec"
       - label: "Update AOSC Subsystems Spec/Reqs"
-        anchor: "update-aosc-subsystems-spec/reqs"
       - label: "Create AOSC Verification and Validation plan"
-        anchor: "create-aosc-verification-and-validation-plan"
       - label: "Create GFC Verification and Validation plan"
-        anchor: "create-gfc-verification-and-validation-plan"
       - label: "Create ICDs"
-        anchor: "create-icds"
 
   - label: "Systems Engineering + Software Tasks"
-    anchor: "systems-engineering-+-software-tasks"
     parent: "Index"
     categories:
       - "Systems Engineering"
       - "Software"
     tasks:
       - label: "Create AOS FID"
-        anchor: "create-aos-fid"
       - label: "Create GFC FID"
-        anchor: "create-gfc-fid"
       - label: "Update Obs Seq. Interactions document"
-        anchor: "update-obs-seq.-interactions-document"
 
   - label: "Software Tasks"
-    anchor: "software-tasks"
     parent: "Index"
     categories:
       - "Software"
     tasks:
       - label: "Create AOS FDD"
-        anchor: "create-aos-fdd"
       - label: "Create GFC FDD"
-        anchor: "create-gfc-fdd"
       - label: "Update AOSC Arch design document"
-        anchor: "update-aosc-arch-design-document"
       - label: "Create GFC Arch design document"
-        anchor: "create-gfc-arch-design-document"
       - label: "Update UI document and SW ICDs"
-        anchor: "update-ui-document-and-sw-icds"
       - label: "Update GCS and Core Arch documents"
-        anchor: "update-gcs-and-core-arch-documents"

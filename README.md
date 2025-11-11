@@ -6,7 +6,7 @@ Tools for parsing the `GCS Plan to get to CDR.md` document and generating multip
 - `generate_index_graph.py`: Builds a directed graph from the markdown index to show the hierarchy of sections and tasks.
 - `create_task_diagrams.py`: Extracts tasks per discipline and exports five diagrams (simple + detailed Venn, bar chart, bipartite network, heatmap).
 - `design.txt`: High-level design notes covering parsing logic and visualization goals.
-- `index_config.yaml`: Source of truth for sections, tasks, anchors, and category assignments.
+- `index_config.yaml`: Source of truth for sections, tasks, and category assignments.
 
 ## Requirements
 - Python 3.11 (runs inside the existing `py3.11` conda environment).
