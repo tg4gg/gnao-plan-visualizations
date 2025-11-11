@@ -6,7 +6,7 @@
 - Keep the workflow reproducible from a clean environment via the provided Python script.
 
 ## Configuration & Data Extraction
-1. `index_config.yaml` is the authoritative source for sections, tasks, anchors, and the category mapping. Users can edit this file to rename deliverables or reassign categories without touching Python code.
+1. `index_config.yaml` is the authoritative source for sections, tasks, and the category mapping. Users can edit this file to rename deliverables or reassign categories without touching Python code.
 2. The markdown file is still included for context, but scripts now hydrate their data structures directly from the YAML configuration.
 3. Each section in the config declares its parent (defaulting to the root), categories, and task list. Tasks can optionally override categories if needed.
 4. Scripts convert the YAML entries into dictionaries containing task names, categories, and parents for downstream plotting.
