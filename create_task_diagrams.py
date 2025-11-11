@@ -16,12 +16,15 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import colors as mcolors  # noqa: E402
+from matplotlib import colormaps  # noqa: E402
+from matplotlib import patches  # noqa: E402
 from matplotlib_venn import venn3  # noqa: E402
 
 CONFIG_PATH = Path("index_config.yaml")
 OUTPUTS = {
     "venn": Path("tasks_venn.png"),
     "venn_detailed": Path("tasks_venn_detailed.png"),
+    "venn_detailed_no_pct": Path("tasks_venn_detailed_no_pct.png"),
     "bars": Path("category_combinations_bar.png"),
     "network": Path("category_task_network.png"),
     "heatmap": Path("category_task_heatmap.png"),
@@ -42,10 +45,15 @@ def extract_tasks(config: dict) -> list[dict[str, object]]:
         section_categories = set(section.get("categories", []))
         for task in section.get("tasks", []):
             task_categories = set(task.get("categories", [])) or section_categories
+            completion = int(task.get("completion", section.get("completion", 0)) or 0)
+            completion = max(0, min(100, completion))
+            blocker = bool(task.get("blocker", section.get("blocker", False)))
             tasks.append({
                 "name": task["label"],
                 "categories": task_categories,
                 "parent_section": section["label"],
+                "completion": completion,
+                "blocker": blocker,
             })
     if not tasks:
         raise ValueError("No tasks defined in the configuration.")
@@ -77,7 +85,22 @@ def draw_venn(category_sets: dict[str, set[str]], category_order: list[str]) -> 
     plt.close()
 
 
-def draw_venn_detailed(category_sets: dict[str, set[str]], category_order: list[str]) -> None:
+def completion_to_color(percent: int) -> str:
+    """Map a completion percentage to a hex color."""
+    normalized = max(0, min(100, percent)) / 100
+    cmap = colormaps["Greens"]
+    rgba = cmap(0.3 + 0.7 * normalized)
+    return mcolors.to_hex(rgba)
+
+
+def draw_venn_detailed(
+    category_sets: dict[str, set[str]],
+    tasks: list[dict[str, object]],
+    category_order: list[str],
+    show_percentage: bool = True,
+    output_path: Path | None = None,
+    title_suffix: str = "",
+) -> None:
     plt.figure(figsize=(10, 8))
     venn = venn3(
         subsets=(
@@ -87,55 +110,93 @@ def draw_venn_detailed(category_sets: dict[str, set[str]], category_order: list[
         ),
         set_labels=category_order,
     )
-    science = category_sets[category_order[0]]
-    systems = category_sets[category_order[1]]
-    software = category_sets[category_order[2]]
-    region_map = {
-        "100": sorted(science - systems - software),
-        "010": sorted(systems - science - software),
-        "001": sorted(software - science - systems),
-        "110": sorted((science & systems) - software),
-        "101": sorted((science & software) - systems),
-        "011": sorted((systems & software) - science),
-        "111": sorted(science & systems & software),
-    }
-    for region_id, tasks in region_map.items():
+    region_map = {key: [] for key in ["100", "010", "001", "110", "101", "011", "111"]}
+    for task in tasks:
+        region_key = "".join("1" if cat in task["categories"] else "0" for cat in category_order)
+        if region_key.count("1") == 0:
+            continue
+        region_map.setdefault(region_key, []).append(task)
+
+    ax = plt.gca()
+
+    pending_progress: list[tuple[plt.Text, int]] = []
+
+    for region_id, task_list in region_map.items():
         label = venn.get_label_by_id(region_id)
         if label is None:
             continue
         center = label.get_position()
         label.set_text("")
-        if not tasks:
+        if not task_list:
             continue
-        cols = 1 if len(tasks) <= 6 else 2
-        rows = math.ceil(len(tasks) / cols)
+        cols = 1 if len(task_list) <= 6 else 2
+        rows = math.ceil(len(task_list) / cols)
         dx = 0.12 / cols if cols > 1 else 0
         dy = 0.065
         start_x = center[0] - (cols - 1) * dx / 2
         start_y = center[1] + (rows - 1) * dy / 2
-        for idx, task in enumerate(tasks):
+        for idx, task in enumerate(task_list):
             row = idx // cols
             col = idx % cols
             x = start_x + col * dx
             y = start_y - row * dy
-            plt.text(
+            completion = int(task.get("completion", 0))
+            blocker = bool(task.get("blocker", False))
+            text = f"{task['name']} ({completion}%)" if show_percentage else task["name"]
+            base_color = "#F8D7DA" if blocker else "none"
+            base_alpha = 0.95 if blocker else 1.0
+            text_obj = plt.text(
                 x,
                 y,
-                task,
+                text,
                 ha="center",
                 va="center",
                 fontsize=8,
                 bbox={
                     "boxstyle": "round,pad=0.25",
-                    "facecolor": "#FFFFFF",
+                    "facecolor": base_color,
                     "edgecolor": "#444444",
                     "linewidth": 0.8,
-                    "alpha": 0.85,
+                    "alpha": base_alpha,
                 },
+                zorder=3,
             )
-    plt.title("Task Overlaps by Discipline (detailed)")
+            bbox_patch = text_obj.get_bbox_patch()
+            bbox_patch.set_zorder(2)
+            if not blocker and completion > 0:
+                pending_progress.append((text_obj, completion))
+
+    fig = plt.gcf()
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    inv = ax.transData.inverted()
+    for text_obj, completion in pending_progress:
+        bbox_patch = text_obj.get_bbox_patch()
+        bbox_disp = bbox_patch.get_window_extent(renderer=renderer)
+        (x0, y0) = inv.transform((bbox_disp.x0, bbox_disp.y0))
+        (x1, y1) = inv.transform((bbox_disp.x1, bbox_disp.y1))
+        width = x1 - x0
+        height = y1 - y0
+        progress_width = width * (completion / 100)
+        progress = patches.Rectangle(
+            (x0, y0),
+            progress_width,
+            height,
+            linewidth=0,
+            facecolor=completion_to_color(completion),
+            alpha=0.85,
+            zorder=2.5,
+            transform=ax.transData,
+        )
+        progress.set_clip_path(bbox_patch)
+        ax.add_patch(progress)
+    title = "Task Overlaps by Discipline (detailed)"
+    if title_suffix:
+        title = f"{title} {title_suffix}"
+    plt.title(title)
     plt.tight_layout()
-    plt.savefig(OUTPUTS["venn_detailed"], dpi=300)
+    out_path = output_path or OUTPUTS["venn_detailed"]
+    plt.savefig(out_path, dpi=300)
     plt.close()
 
 
@@ -232,7 +293,15 @@ def main() -> None:
     category_sets = build_category_sets(tasks, category_order)
 
     draw_venn(category_sets, category_order)
-    draw_venn_detailed(category_sets, category_order)
+    draw_venn_detailed(category_sets, tasks, category_order)
+    draw_venn_detailed(
+        category_sets,
+        tasks,
+        category_order,
+        show_percentage=False,
+        output_path=OUTPUTS["venn_detailed_no_pct"],
+        title_suffix="(names only)",
+    )
     draw_bar_chart(tasks)
     draw_network(tasks, category_order)
     draw_heatmap(tasks, category_order)

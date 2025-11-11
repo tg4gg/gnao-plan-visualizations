@@ -18,6 +18,8 @@ sections:
       - "Science"
     tasks:
       - label: "Update GNAO ConOps"
+        completion: 70
+        blocker: false
 
   - label: "Science + Systems Engineering Tasks"
     parent: "Index"
@@ -26,8 +28,14 @@ sections:
       - "Systems Engineering"
     tasks:
       - label: "Create GNAO OpsCon"
+        completion: 65
+        blocker: false
       - label: "Create AOS OpsCon"
+        completion: 40
+        blocker: false
       - label: "Create GFC OpsCon"
+        completion: 35
+        blocker: true
 
   - label: "Systems Engineering Tasks"
     parent: "Index"
@@ -35,11 +43,23 @@ sections:
       - "Systems Engineering"
     tasks:
       - label: "Finalize MindMaps"
+        completion: 80
+        blocker: false
       - label: "Create GFC Subsystem Spec"
+        completion: 20
+        blocker: true
       - label: "Update AOSC Subsystems Spec/Reqs"
+        completion: 30
+        blocker: false
       - label: "Create AOSC Verification and Validation plan"
+        completion: 15
+        blocker: false
       - label: "Create GFC Verification and Validation plan"
+        completion: 10
+        blocker: false
       - label: "Create ICDs"
+        completion: 25
+        blocker: false
 
   - label: "Systems Engineering + Software Tasks"
     parent: "Index"
@@ -48,8 +68,14 @@ sections:
       - "Software"
     tasks:
       - label: "Create AOS FID"
+        completion: 50
+        blocker: false
       - label: "Create GFC FID"
+        completion: 30
+        blocker: false
       - label: "Update Obs Seq. Interactions document"
+        completion: 45
+        blocker: false
 
   - label: "Software Tasks"
     parent: "Index"
@@ -57,8 +83,20 @@ sections:
       - "Software"
     tasks:
       - label: "Create AOS FDD"
+        completion: 10
+        blocker: false
       - label: "Create GFC FDD"
+        completion: 15
+        blocker: false
       - label: "Update AOSC Arch design document"
+        completion: 35
+        blocker: false
       - label: "Create GFC Arch design document"
+        completion: 5
+        blocker: true
       - label: "Update UI document and SW ICDs"
+        completion: 40
+        blocker: false
       - label: "Update GCS and Core Arch documents"
+        completion: 25
+        blocker: false

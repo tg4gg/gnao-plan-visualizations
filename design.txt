@@ -15,6 +15,7 @@
 1. **Venn Diagrams**
    - `draw_venn`: Simple overlap view with only category labels to show set size.
    - `draw_venn_detailed`: Uses the same structure but injects task names into each region. Tasks are rendered in small rounded boxes, stacked vertically within the overarching circle to stay readable even when one category dominates.
+   - A second `draw_venn_detailed` pass renders the same layout without the percentage text for shareable slides where labels should stay compact while still showing progress bars.
 2. **Bar Chart**
    - Aggregates counts for each unique category combination (Science-only, Science+SE, etc.) to make resourcing discussions easier.
 3. **Bipartite Network**
@@ -26,6 +27,11 @@
 - Implemented in `create_task_diagrams.py` with helper functions for parsing, building category sets, and rendering each visualization.
 - Uses `matplotlib`, `matplotlib-venn`, `networkx`, and `numpy`. All plots are saved as PNGs in the repo root for easy sharing.
 - The script is idempotent: re-running after changes to the markdown regenerates all diagrams in one go.
+
+## Status Metadata
+- Each task in the YAML config includes a `completion` percentage (0-100) and a `blocker` flag.
+- The detailed Venn diagram annotates every task with its completion percentage and overlays a progress bar (green fill proportional to completion) behind the text.
+- Blocked tasks override that progress bar with a light red badge so they stand out immediately.
 
 ## Future Enhancements
 - Accept the markdown path as a CLI argument to support alternate plans.
