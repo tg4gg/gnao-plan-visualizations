@@ -1,70 +1,44 @@
 #!/usr/bin/env python3
-"""Parse the markdown index and render it as a directed graph."""
+"""Render the plan structure defined in index_config.yaml as a directed graph."""
 from __future__ import annotations
 
 from pathlib import Path
-import re
 
 import matplotlib
 import networkx as nx
+import yaml
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 
-MD_PATH = Path("GCS Plan to get to CDR.md")
+CONFIG_PATH = Path("index_config.yaml")
 OUTPUT_PATH = Path("index_graph.png")
 
 
-def parse_index(md_path: Path) -> list[dict[str, str | bool]]:
-    """Return a list of index entries from the markdown file."""
-    text = md_path.read_text()
-    lines = text.splitlines()
-    entries: list[dict[str, str | bool]] = []
-    capture = False
-
-    for line in lines:
-        if line.startswith("# Index"):
-            capture = True
-            continue
-        if capture and line.startswith("#"):
-            break
-        stripped = line.strip()
-        if not capture or not stripped or not stripped.startswith("["):
-            continue
-        match = re.search(r"\[(.*?)\]\(#(.*?)\)", stripped)
-        if not match:
-            continue
-        raw_label = match.group(1)
-        anchor = match.group(2)
-        label = raw_label.replace("**", "").strip()
-        label = re.sub(r"\s+\d+$", "", label).strip()
-        is_section = "**" in raw_label
-        entries.append({"label": label, "anchor": anchor, "is_section": is_section})
-
-    return entries
+def load_config(config_path: Path) -> dict:
+    if not config_path.exists():
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+    return yaml.safe_load(config_path.read_text())
 
 
-def build_graph(entries: list[dict[str, str | bool]]) -> nx.DiGraph:
-    """Build a directed graph where sections connect to their tasks."""
+def build_graph(config: dict) -> nx.DiGraph:
+    """Build a directed graph based on the YAML configuration."""
+    root_label = config.get("root", {}).get("label", "Index")
     graph = nx.DiGraph()
-    root = "Index"
-    graph.add_node(root, kind="root")
-    current_section = root
+    graph.add_node(root_label, kind="root")
 
-    for entry in entries:
-        label = str(entry["label"])
-        kind = "section" if entry["is_section"] else "task"
-        if label == root:
-            current_section = root
-            continue
-        graph.add_node(label, kind=kind)
-        if kind == "section":
-            graph.add_edge(root, label)
-            current_section = label
-        else:
-            parent = current_section if current_section else root
-            graph.add_edge(parent, label)
+    for section in config.get("sections", []):
+        section_label = section["label"]
+        graph.add_node(section_label, kind=section.get("kind", "section"))
+        parent = section.get("parent") or root_label
+        graph.add_edge(parent, section_label)
+
+        for task in section.get("tasks", []):
+            task_label = task["label"]
+            graph.add_node(task_label, kind="task")
+            task_parent = task.get("parent") or section_label
+            graph.add_edge(task_parent, task_label)
 
     return graph
 
@@ -98,11 +72,9 @@ def draw_graph(graph: nx.DiGraph, out_path: Path) -> None:
 
 
 def main() -> None:
-    entries = parse_index(MD_PATH)
-    if not entries:
-        raise SystemExit("No index entries found in the markdown file")
+    config = load_config(CONFIG_PATH)
 
-    graph = build_graph(entries)
+    graph = build_graph(config)
     draw_graph(graph, OUTPUT_PATH)
 
 

@@ -5,11 +5,11 @@
 - Provide multiple visualization types that help stakeholders understand cross-discipline workload distribution.
 - Keep the workflow reproducible from a clean environment via the provided Python script.
 
-## Data Extraction
-1. Treat the markdown file as the single source of truth.
-2. Recognize sections by first-level headings ("Science Tasks", "Science + Systems Engineering Tasks", etc.).
-3. Capture second-level headings beneath those sections as distinct tasks and inherit the section's category mapping.
-4. Store each task as a dict containing name, categories, and parent section for downstream plotting.
+## Configuration & Data Extraction
+1. `index_config.yaml` is the authoritative source for sections, tasks, anchors, and the category mapping. Users can edit this file to rename deliverables or reassign categories without touching Python code.
+2. The markdown file is still included for context, but scripts now hydrate their data structures directly from the YAML configuration.
+3. Each section in the config declares its parent (defaulting to the root), categories, and task list. Tasks can optionally override categories if needed.
+4. Scripts convert the YAML entries into dictionaries containing task names, categories, and parents for downstream plotting.
 
 ## Visualizations
 1. **Venn Diagrams**
